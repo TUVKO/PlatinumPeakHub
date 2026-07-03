@@ -453,12 +453,12 @@ input[type="password"]{padding-right:46px;}
     <div class="auth-subtitle">Sign in to your investment account</div>
     <div class="field-group">
       <label class="field-label">Username</label>
-      <div class="field-wrap"><span class="field-icon">👤</span><input type="text" id="login-username" placeholder="Enter your username"></div>
+      <div class="field-wrap"><input type="text" id="login-username" placeholder="Enter your username"></div>
       <div class="field-error" id="login-user-err">Please enter your username</div>
     </div>
     <div class="field-group">
       <label class="field-label">Password</label>
-      <div class="field-wrap"><span class="field-icon">🔒</span><input type="password" id="login-password" placeholder="Enter password"><button class="eye-btn" onclick="toggleEye('login-password',this)">👁️</button></div>
+      <div class="field-wrap"><input type="password" id="login-password" placeholder="Enter password"><button class="eye-btn" onclick="toggleEye('login-password',this,true)">Show</button></div>
       <div class="field-error" id="login-pw-err">Please enter your password</div>
     </div>
     <div class="field-error" id="login-general-err" style="text-align:center;margin-bottom:10px;font-size:12px;"></div>
@@ -512,12 +512,14 @@ input[type="password"]{padding-right:46px;}
     </div>
     <div class="field-group">
       <label class="field-label">Phone Number</label>
-      <div class="phone-prefix-wrap" id="reg-phone-wrap">
-        <div class="phone-prefix-badge" id="reg-prefix">+256</div>
-        <input type="tel" id="reg-phone" placeholder="0XXXXXXXXX" maxlength="10" oninput="regPhoneInput(this)">
-      </div>
+      <div class="field-wrap"><input type="tel" id="reg-phone" placeholder="0712345678" maxlength="10" oninput="regPhoneInput(this)"></div>
       <div class="field-hint">10 digits starting with 0</div>
       <div class="field-error" id="reg-phone-err">Enter 10 digits starting with 0</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Email</label>
+      <div class="field-wrap"><input type="email" id="reg-email" placeholder="Enter your email"></div>
+      <div class="field-error" id="reg-email-err">Enter a valid email address</div>
     </div>
     <div class="field-group">
       <label class="field-label">Password</label>
@@ -2091,10 +2093,11 @@ async function doLogin() {
 }
 
 async function doRegister() {
-  clearErrors('reg-user-err', 'reg-country-err', 'reg-phone-err', 'reg-pw-err', 'reg-general-err');
+  clearErrors('reg-user-err', 'reg-country-err', 'reg-phone-err', 'reg-email-err', 'reg-pw-err', 'reg-general-err');
   const username = document.getElementById('reg-username').value.trim();
   const country = document.getElementById('reg-country').value;
   const phoneDigits = document.getElementById('reg-phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
   const urlParams = new URLSearchParams(window.location.search);
   const refCode = urlParams.get('ref') || null;
@@ -2102,6 +2105,7 @@ async function doRegister() {
   if (!username) { setErr('reg-user-err', true, 'Username is required'); ok = false; }
   if (!country) { setErr('reg-country-err', true, 'Please select your country'); ok = false; }
   if (!phoneDigits || phoneDigits.length !== 10 || !phoneDigits.startsWith('0')) { setErr('reg-phone-err', true, 'Enter 10 digits starting with 0'); ok = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('reg-email-err', true, 'Enter a valid email address'); ok = false; }
   if (!password || password.length < 6) { setErr('reg-pw-err', true, 'Password must be at least 6 characters'); ok = false; }
   if (!ok) return;
   const existing = await db.ref('users/' + safeKey(username)).get();
@@ -2111,7 +2115,18 @@ async function doRegister() {
     'SS': '+211',
     'RW': '+250',
     'KE': '+254',
-    'TZ': '+255'
+    'TZ': '+255',
+    'BI': '+257',
+    'ET': '+251',
+    'SO': '+252',
+    'CD': '+243',
+    'ZM': '+260',
+    'MW': '+265',
+    'MZ': '+258',
+    'NG': '+234',
+    'GH': '+233',
+    'ZW': '+263',
+    'SD': '+249'
   };
   const prefix = countryPrefixes[country] || '+256';
   // Convert 0712345678 to +256712345678 (remove 0, add prefix)
@@ -2120,7 +2135,7 @@ async function doRegister() {
   const todayKey = getDateKey(new Date());
   const timestamp = Date.now();
   const newUser = {
-    username, password, country, phone: convertedPhone, stake: 0, balance: 4000, withdrawn: 0, refEarned: 0, totalEarned: 0,
+    username, password, country, phone: convertedPhone, email, stake: 0, balance: 4000, withdrawn: 0, refEarned: 0, totalEarned: 0,
     activated: false, locked: false, referredBy: refCode, joinedDate: new Date().getFullYear().toString(),
     lastProfitDate: todayKey,
     transactions: { t0: { type: 'Bonus', amount: 4000, note: 'Registration Bonus 🎁', date: now, status: 'completed', timestamp: timestamp } },
@@ -2160,6 +2175,7 @@ async function doRegister() {
   // Silent registration - no toast
   document.getElementById('reg-username').value = '';
   document.getElementById('reg-phone').value = '';
+  document.getElementById('reg-email').value = '';
   document.getElementById('reg-password').value = '';
   document.getElementById('reg-confirm').value = '';
   document.getElementById('reg-country').value = '';
