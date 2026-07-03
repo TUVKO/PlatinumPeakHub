@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <meta property="og:title" content="platinum-Peak-Hub — Grow Your Wealth">
 <meta property="og:description" content="Join platinum-Peak-Hub and earn 10% daily profit on your investments. Start with UGX 4,000 bonus!">
 <meta property="og:image" content="https://tuvko.github.io/PlatinumPeakHub/logo.png">
@@ -244,10 +244,10 @@ input[type="password"]{padding-right:46px;}
 .logout-btn-new:active{transform:scale(.98);}
 
 /* Bottom Nav */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 0 10px;z-index:200;}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;}
-.nav-icon{font-size:18px;}
-.nav-label{font-size:7px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 2px calc(8px + env(safe-area-inset-bottom));z-index:200;}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:4px 2px;min-width:0;}
+.nav-icon{font-size:17px;line-height:1;}
+.nav-label{font-size:8px;font-weight:700;letter-spacing:0.2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .nav-item.active .nav-label{color:var(--accent);}
 
 /* Footer */
@@ -396,6 +396,11 @@ input[type="password"]{padding-right:46px;}
 .loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;color:var(--muted);}
+.loading-dots span{opacity:0;animation:dotFade 1.4s infinite;}
+.loading-dots span:nth-child(1){animation-delay:0s;}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dotFade{0%{opacity:0;}20%{opacity:1;}50%{opacity:1;}80%{opacity:0;}100%{opacity:0;}}
 /* ===== Platinum-Peak-Hub Home Redesign ===== */
 .ph-balance-card{background:#1a2332;border-radius:16px;padding:14px 12px;}
 .ph-balance-row{display:flex;align-items:center;justify-content:space-between;}
@@ -433,8 +438,7 @@ input[type="password"]{padding-right:46px;}
 <div class="particles-bg" id="particles-bg"></div>
 
 <div class="loading-screen" id="loading-screen">
-  <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--accent);margin-bottom:10px;">platinum-Peak-Hub</div>
-  <div class="loading-text" style="font-size:18px;font-weight:600;letter-spacing:2px;margin-top:20px;">Connecting....</div>
+  <div class="loading-text" style="font-size:18px;font-weight:600;letter-spacing:2px;margin-top:20px;">Loading<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
 </div>
 
 <!-- LOGIN -->
@@ -521,11 +525,9 @@ input[type="password"]{padding-right:46px;}
   <div class="topbar">
     <div class="topbar-left">
       <div class="menu-btn" onclick="openMenu()"><span></span><span></span><span></span></div>
-      <div class="brand"><div class="brand-icon">✨</div><div class="brand-name" style="font-size:12px;font-weight:600;">Welcome back, keep growing!</div></div>
+      <div class="brand"><div class="brand-icon" style="background:transparent;padding:0;"><img src="https://tuvko.github.io/PlatinumPeakHub/logo.png" style="width:34px;height:34px;object-fit:contain;"></div><div class="brand-name" style="font-size:12px;font-weight:600;">Welcome back, keep growing!</div></div>
     </div>
     <div class="topbar-right">
-      <img src="https://tuvko.github.io/PlatinumPeakHub/logo.png" style="width:32px;height:32px;object-fit:contain;margin-right:8px;">
-      <button class="theme-toggle" onclick="doLogout()" style="color:#ff6b6b;font-size:16px;" title="Logout">🚪</button>
       <div class="username-top" id="dash-username" style="display:none;">—</div>
     </div>
   </div>
@@ -801,6 +803,7 @@ input[type="password"]{padding-right:46px;}
     <div class="nav-item" onclick="switchTab('team')"><span class="nav-icon">👥</span><span class="nav-label">Invite</span></div>
     <div class="nav-item" onclick="switchTab('plan')"><span class="nav-icon">🎯</span><span class="nav-label">Yield</span></div>
     <div class="nav-item" onclick="switchTab('profile')"><span class="nav-icon">👤</span><span class="nav-label">About</span></div>
+    <div class="nav-item" onclick="doLogout()"><span class="nav-icon" style="color:#ff6b6b;">🚪</span><span class="nav-label">Logout</span></div>
   </nav>
 
   <footer class="app-footer">
@@ -1248,7 +1251,7 @@ function closePrivacyModal(event) {
 }
 
 const tabMap = { home: 'sec-home', history: 'sec-history', team: 'sec-team', plan: 'sec-plan', profile: 'sec-profile', deposit: 'sec-deposit', withdraw: 'sec-withdraw', reinvest: 'sec-reinvest' };
-const navOrder = ['home', 'history', 'team', 'plan', 'profile'];
+const navOrder = ['home', 'team', 'plan', 'profile'];
 
 function switchTab(tab) {
   if (tab === 'withdraw' && settingsData.withdrawLocked) {
