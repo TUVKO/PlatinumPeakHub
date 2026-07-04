@@ -98,10 +98,6 @@ tbody tr:last-child{border-bottom:none;}
 tbody tr:hover{background:var(--surface2);}
 tbody td{padding:13px 16px;font-size:13px;vertical-align:middle;}
 .mono{font-family:'JetBrains Mono',monospace;font-size:12px;}
-.refresh-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:8px;color:var(--accent);transition:transform .3s;margin-right:16px;}
-.refresh-btn:hover{color:var(--accent2);}
-.refresh-btn.loading{animation:spin 1s linear infinite;}
-@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 .badge-pending{background:var(--surface2);color:var(--muted);border:1px solid var(--muted);}
 .badge-approved{background:var(--surface2);color:var(--success);border:1px solid var(--success);}
 .badge-rejected{background:var(--surface2);color:var(--warn);border:1px solid var(--warn);}
@@ -323,7 +319,6 @@ tbody td{padding:13px 16px;font-size:13px;vertical-align:middle;}
           <div class="page-title">Dashboard</div>
           <div class="page-sub">Real-time platform overview</div>
         </div>
-        <button class="refresh-btn" id="refresh-btn" onclick="refreshDashboard()" title="Refresh data">🔄</button>
       </div>
       <div class="stats-row">
         <div class="stat-card"><div class="stat-card-label">Total Users</div><div class="stat-card-val green" id="d-total-users">—</div></div>
@@ -571,13 +566,13 @@ tbody td{padding:13px 16px;font-size:13px;vertical-align:middle;}
         <div class="settings-row">
           <span class="settings-label">Earning Period (Days)</span>
           <div style="display:flex;align-items:center;gap:8px;">
-            <input type="number" class="ugx-input" id="earning-period-input" min="1" max="365" step="1" placeholder="48" style="max-width:80px;">
+            <input type="number" class="ugx-input" id="earning-period-input" min="1" max="365" step="1" placeholder="50" style="max-width:80px;">
             <span class="pct-label" style="color:var(--muted);">days</span>
-            <span id="total-return-preview" style="font-size:12px;color:var(--accent);font-weight:600;margin-left:12px;">= 480% Total Return</span>
+            <span id="total-return-preview" style="font-size:12px;color:var(--accent);font-weight:600;margin-left:12px;">= 500% Total Return</span>
           </div>
           <button class="btn btn-save" onclick="saveEarningPeriod()">Save</button>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px;">💡 Example: 48 days × 10% = 480% total return</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">💡 Example: 50 days × 10% = 500% total return</div>
       </div>
 
       <!-- Withdrawal Approval Toggle -->
@@ -794,19 +789,6 @@ function clearCache() {
   } catch (e) {
     console.error('Cache clear error:', e);
   }
-}
-
-function refreshDashboard() {
-  const btn = document.getElementById('refresh-btn');
-  btn.classList.add('loading');
-  
-  // Clear the cache
-  clearCache();
-  
-  // Reload the page to fetch fresh data
-  setTimeout(() => {
-    location.reload();
-  }, 500);
 }
 
 function toast(msg, color) { const t = document.getElementById('toast'); t.textContent = msg; t.style.background = color || 'var(--accent3)'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800); }
@@ -1561,7 +1543,7 @@ function loadSettingsUI() {
   document.getElementById('min-withdraw-input').value = s.minWithdraw || 10000;
   
   // Load earning period
-  const earningPeriod = s.earningPeriod || 48;
+  const earningPeriod = s.earningPeriod || 50;
   document.getElementById('earning-period-input').value = earningPeriod;
   document.getElementById('total-return-preview').textContent = `= ${earningPeriod * 10}% Total Return`;
   
@@ -1692,7 +1674,7 @@ async function saveRefPct() {
 }
 
 async function saveEarningPeriod() {
-  const days = parseInt(document.getElementById('earning-period-input').value) || 48;
+  const days = parseInt(document.getElementById('earning-period-input').value) || 50;
   const totalReturn = days * 10;
   await db.ref('settings').update({ earningPeriod: days });
   toast(`✅ Earning period set to ${days} days (${totalReturn}% total return)`);
@@ -1703,7 +1685,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const input = document.getElementById('earning-period-input');
   if (input) {
     input.addEventListener('input', function() {
-      const days = parseInt(this.value) || 48;
+      const days = parseInt(this.value) || 50;
       const totalReturn = days * 10;
       const preview = document.getElementById('total-return-preview');
       if (preview) {

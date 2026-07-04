@@ -113,7 +113,6 @@ input[type="password"]{padding-right:46px;}
 .menu-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;cursor:pointer;margin-bottom:4px;font-size:14px;font-weight:600;color:var(--text);}
 .menu-item:hover{background:var(--surface2);}
 .menu-item.active-menu{background:var(--surface3);color:var(--accent);}
-.menu-item-icon{font-size:20px;width:28px;}
 .menu-divider{height:1px;background:var(--border);margin:10px 0;}
 .menu-logout{margin:12px;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:700;background:var(--warn);color:#fff;border:none;width:calc(100% - 24px);font-family:'DM Sans',sans-serif;}
 .menu-logout:active{transform:scale(.98);}
@@ -275,7 +274,7 @@ input[type="password"]{padding-right:46px;}
 #sec-withdraw .action-card{background:linear-gradient(135deg, rgba(255,107,91,.1) 0%, rgba(255,107,91,.05) 100%);border:1px solid rgba(255,107,91,.3);}
 #sec-reinvest .action-card{background:linear-gradient(135deg, rgba(6,182,212,.1) 0%, rgba(6,182,212,.05) 100%);border:1px solid rgba(6,182,212,.3);}
 
-.popup-banner{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:#1e293b;color:#fff;font-size:13px;font-weight:600;padding:14px 22px;border-radius:16px;opacity:0;transition:.35s;z-index:9998;pointer-events:none;text-align:center;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);line-height:1.5;}
+.popup-banner{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:#22c55e;color:#fff;font-size:12px;font-weight:600;padding:10px 18px;border-radius:12px;opacity:0;transition:.35s;z-index:9998;pointer-events:none;text-align:center;max-width:300px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);line-height:1.4;}
 .popup-banner.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .readonly-field{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px 13px 42px;font-family:'Courier New',monospace;font-size:13px;color:var(--muted);}
 .charge-note{background:var(--surface2);border:1px solid var(--warn);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--warn);margin-bottom:12px;line-height:1.6;}
@@ -757,25 +756,20 @@ input[type="password"]{padding-right:46px;}
   <div class="dash-section" id="sec-withdraw">
     <div class="inner-header"><span style="font-size:22px">💰</span><div><div class="inner-title">Withdraw</div><div class="inner-sub">Cash out your BALANCE</div></div></div>
     <div class="section">
-      <div id="withdraw-locked-msg" class="locked-banner" style="display:none">🔒 Withdrawals are currently disabled. Please contact support.</div>
+      <div id="withdraw-locked-msg" class="locked-banner" style="display:none">Withdrawals are currently disabled. Please contact support.</div>
       <div class="action-card">
-        <div class="charge-note">⚠️ Withdrawal fee: <span id="with-fee-percent">10</span>% of amount. You receive <span id="with-receive-percent">90</span>% of requested amount.</div>
-        <div class="deposit-note">📱 Funds will be sent to your registered mobile money number.</div>
+        <div class="charge-note" style="display:none;">Withdrawal fee: <span id="with-fee-percent">10</span>% of amount. You receive <span id="with-receive-percent">90</span>% of requested amount.</div>
+        <div class="deposit-note" style="font-size:11px;">Funds will be sent to your registered mobile money number: <strong id="with-phone-note">—</strong>. To change it, contact support.</div>
         <div class="field-group">
           <label class="field-label">Amount (UGX)</label>
           <div class="field-wrap"><input type="number" id="with-amount" placeholder="Enter amount" min="5000" oninput="updateWithdrawPreview()"></div>
           <div class="field-error" id="with-amount-err">Minimum withdrawal is <span id="with-min-display">UGX 10,000</span></div>
         </div>
-        <div class="field-group">
-          <label class="field-label">Sending To</label>
-          <div class="field-wrap"><div class="readonly-field" id="with-phone-display">—</div></div>
-          <div class="field-hint">🔒 Locked to your registered number</div>
-        </div>
         <div id="withdraw-preview" style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;display:none;">
-          <span>💸 You receive: </span><strong id="withdraw-net-amount">UGX 0</strong><br>
-          <span>🔧 Fee: </span><strong id="withdraw-fee-amount">UGX 0</strong>
+          <span>You receive: </span><strong id="withdraw-net-amount">UGX 0</strong><br>
+          <span>Fee: </span><strong id="withdraw-fee-amount">UGX 0</strong>
         </div>
-        <button class="red-btn" id="with-submit-btn" onclick="doWithdraw()">💸 WITHDRAW</button>
+        <button class="red-btn" id="with-submit-btn" onclick="doWithdraw()">WITHDRAW</button>
       </div>
     </div>
   </div>
@@ -825,14 +819,20 @@ input[type="password"]{padding-right:46px;}
 <div class="side-menu" id="side-menu">
   <div class="side-menu-header"><span class="side-menu-brand">platinum-Peak-Hub</span><button class="close-menu" onclick="closeMenu()">✕</button></div>
   <div class="side-menu-items">
-    <div class="menu-item active-menu" onclick="menuNav('home')"><span class="menu-item-icon">🏠</span>Feed</div>
-    <div class="menu-item" onclick="menuNav('deposit')"><span class="menu-item-icon">💳</span>Add Funds</div>
-    <div class="menu-item" onclick="menuNav('withdraw')"><span class="menu-item-icon">💰</span>Cashout</div>
-    <div class="menu-item" onclick="menuNav('reinvest')"><span class="menu-item-icon">🔄</span>Boost</div>
-    <div class="menu-item" onclick="menuNav('team')"><span class="menu-item-icon">🔗</span>Rewards</div>
+    <div class="menu-item active-menu" onclick="menuNav('home')">Dashboard</div>
+    <div class="menu-item" onclick="menuNav('deposit')">Deposit</div>
+    <div class="menu-item" onclick="menuNav('withdraw')">Withdraw</div>
+    <div class="menu-item" onclick="menuNav('reinvest')">Re-invest</div>
     <div class="menu-divider"></div>
-    <div class="menu-item" onclick="menuNav('history')"><span class="menu-item-icon">📋</span>Activity</div>
-    <div class="menu-item" onclick="menuNav('profile')"><span class="menu-item-icon">👤</span>Settings</div>
+    <div class="menu-item" onclick="menuNavFiltered('history','Deposit')">Deposits</div>
+    <div class="menu-item" onclick="menuNavFiltered('history','Withdrawal')">Withdraws</div>
+    <div class="menu-item" onclick="menuNavFiltered('history','Profit')">Daily Profits</div>
+    <div class="menu-item" onclick="menuNavFiltered('history','Referral')">Referral Bonuses</div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="menuNav('team')">Referrals</div>
+    <div class="menu-item" onclick="menuNav('profile')">Profile</div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="doLogout()" style="color:#ff6b6b;">Logout</div>
   </div>
 </div>
 
@@ -1273,6 +1273,17 @@ function switchTab(tab) {
 
 function menuNav(tab) { switchTab(tab); }
 
+function menuNavFiltered(tab, filterType) {
+  switchTab(tab);
+  const pills = document.querySelectorAll('.tx-pill');
+  pills.forEach(b => {
+    const onclickAttr = b.getAttribute('onclick') || '';
+    if (onclickAttr.includes(`'${filterType}'`)) {
+      setTxFilter(filterType, b);
+    }
+  });
+}
+
 function startSettingsListener() {
   db.ref('settings').on('value', (snap) => {
     if (snap.exists()) settingsData = { ...settingsData, ...snap.val() };
@@ -1361,15 +1372,11 @@ function updateWithdrawPreview() {
   const feePercent = (settingsData.withdrawCharge || 10) / 100;
   const fee = Math.floor(amount * feePercent);
   const net = amount - fee;
-  const preview = document.getElementById('withdraw-preview');
   const netEl = document.getElementById('withdraw-net-amount');
   const feeEl = document.getElementById('withdraw-fee-amount');
   if (amount > 0) {
-    if (preview) preview.style.display = 'block';
     if (netEl) netEl.textContent = fmt(net);
     if (feeEl) feeEl.textContent = fmt(fee);
-  } else {
-    if (preview) preview.style.display = 'none';
   }
 }
 
@@ -1487,7 +1494,7 @@ function updateProfileUI() {
   document.getElementById('profile-user-simple').textContent = currentUser.username || '—';
   document.getElementById('profile-phone-simple').textContent = currentUser.phone || '—';
   document.getElementById('profile-date-simple').textContent = currentUser.joinedDate || '2025';
-  document.getElementById('with-phone-display').textContent = currentUser.phone || '—';
+  document.getElementById('with-phone-note').textContent = currentUser.phone || '—';
 }
 
 function updateWhatsAppButton() {
@@ -1850,19 +1857,20 @@ async function doWithdraw() {
   }
   if (!currentUser.activated) { 
     sendAdminNotification('withdrawal_not_activated', currentUsername, 0, 'Inactive account tried to withdraw');
+    setErr('with-amount-err', true, "Inactive account can't withdraw.");
     return; 
   }
   const minWith = settingsData.minWithdraw || 10000;
   const amount = parseInt(document.getElementById('with-amount').value) || 0;
   if (amount < minWith) { setErr('with-amount-err', true, 'Minimum withdrawal is ' + fmt(minWith)); return; }
   const balance = currentUser.balance || 0;
-  if (balance < amount) { setErr('with-amount-err', true, 'Insufficient BALANCE.'); return; }
+  if (balance < amount) { setErr('with-amount-err', true, 'Transaction could not be completed due to insufficient balance.'); return; }
   const feePercent = (settingsData.withdrawCharge || 10) / 100;
   const fee = Math.floor(amount * feePercent);
   const sendAmount = amount - fee;
   const userPhone = currentUser.phone;
   const btn = document.getElementById('with-submit-btn');
-  btn.disabled = true; btn.textContent = '⏳ Processing...';
+  btn.disabled = true; btn.textContent = 'Processing...';
   const newBalance = balance - amount;
   const newWithdrawn = (currentUser.withdrawn || 0) + amount;
   const timestamp = Date.now();
@@ -1871,9 +1879,9 @@ async function doWithdraw() {
   const reference = genUUID();
   
   const popup = document.getElementById('popup-banner');
-  popup.textContent = '💸 You will receive your funds shortly';
+  popup.textContent = `You will receive your funds shortly on your mobile money account on ${userPhone}, check in 10 seconds.`;
   popup.classList.add('show');
-  setTimeout(() => popup.classList.remove('show'), 1000);
+  setTimeout(() => popup.classList.remove('show'), 5000);
   
   // Create admin transaction record with PENDING status
   const adminTxKey = 'adm_wd_' + timestamp;
@@ -1938,7 +1946,7 @@ async function doWithdraw() {
     await db.ref('adminTransactions/' + adminTxKey).update({ status: 'failed' });
     await sendAdminNotification('withdrawal_error', currentUsername, amount, 'Critical error: ' + error.message);
   }
-  btn.disabled = false; btn.textContent = '💸 WITHDRAW';
+  btn.disabled = false; btn.textContent = 'WITHDRAW';
   switchTab('home');
 }
 
