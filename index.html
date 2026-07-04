@@ -305,45 +305,20 @@ input[type="password"]{padding-right:46px;}
 .tx-table .amount.negative{color:var(--warn);font-weight:700;}
 .tx-table .amount.gold{color:var(--muted);font-weight:700;}
 .tx-table .status{font-size:11px;font-weight:600;white-space:nowrap;}
-/* New Transaction Cards Grid */
-.tx-filter-pills{display:flex;gap:8px;overflow-x:auto;padding:0 0 16px;scrollbar-width:none;margin-bottom:12px;}
-.tx-filter-pills::-webkit-scrollbar{display:none;}
-.tx-pill{flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.3s;}
-.tx-pill:active{transform:scale(0.98);}
-.tx-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
-
-.tx-search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:12px;}
-.tx-search-input:focus{border-color:var(--accent);}
-
-.tx-cards-grid{display:grid;grid-template-columns:1fr;gap:12px;}
-@media (min-width:480px){.tx-cards-grid{grid-template-columns:repeat(2,1fr);}}
-
-.tx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;}
-.tx-card:active{transform:scale(0.98);}
-.tx-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent);}
-
-.tx-card.tx-deposit::before{background:linear-gradient(90deg, #10b981, #059669);}
-.tx-card.tx-withdrawal::before{background:linear-gradient(90deg, #ef4444, #dc2626);}
-.tx-card.tx-profit::before{background:linear-gradient(90deg, #d4af37, #c9a227);}
-.tx-card.tx-bonus::before{background:linear-gradient(90deg, #f59e0b, #d97706);}
-.tx-card.tx-referral::before{background:linear-gradient(90deg, #8b5cf6, #7c3aed);}
-
-.tx-card-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.tx-card-icon{font-size:28px;width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:12px;}
-.tx-card-type{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
-.tx-card-date{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;}
-
-.tx-card-amount{font-size:20px;font-weight:800;font-family:'Courier New',monospace;color:var(--text);margin-bottom:10px;}
-.tx-card-amount.positive{color:#10b981;}
-.tx-card-amount.negative{color:#ef4444;}
-
-.tx-card-status{display:inline-block;font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:0.5px;}
+/* One-line Transaction Records */
+.tx-line-list{display:flex;flex-direction:column;}
+.tx-line-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 4px;border-bottom:1px solid var(--border);}
+.tx-line-row:last-child{border-bottom:none;}
+.tx-line-date{font-size:12px;color:var(--muted);font-family:'Courier New',monospace;flex:1;}
+.tx-line-amount{font-size:13px;font-weight:800;font-family:'Courier New',monospace;text-align:right;}
+.tx-line-amount.positive{color:#10b981;}
+.tx-line-amount.negative{color:#ef4444;}
+.tx-line-status{font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
 .tx-status-completed{background:rgba(16, 185, 129, 0.2);color:#10b981;border:1px solid #10b981;}
 .tx-status-pending{background:rgba(77, 217, 232, 0.2);color:#4dd9e8;border:1px solid #4dd9e8;}
 .tx-status-failed{background:rgba(239, 68, 68, 0.2);color:#ef4444;border:1px solid #ef4444;}
 
 .tx-empty-state{text-align:center;padding:60px 20px;}
-.tx-empty-icon{font-size:48px;margin-bottom:12px;}
 .tx-empty-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
 .tx-empty-text{font-size:12px;color:var(--muted);}
 
@@ -612,10 +587,6 @@ input[type="password"]{padding-right:46px;}
           <div class="ph-action-icon" style="background:#fdeaea;">📤</div>
           <div class="ph-action-label">Withdraw</div>
         </div>
-        <div class="ph-action-tile" onclick="switchTab('history')">
-          <div class="ph-action-icon" style="background:#e8f0fe;">📄</div>
-          <div class="ph-action-label">Records</div>
-        </div>
         <div class="ph-action-tile" onclick="switchTab('team')">
           <div class="ph-action-icon" style="background:#f3e8fd;">👥</div>
           <div class="ph-action-label">Referrals</div>
@@ -632,27 +603,31 @@ input[type="password"]{padding-right:46px;}
   <a href="#" id="whatsapp-float-btn" class="whatsapp-float" target="_blank">💬</a>
 
   <!-- History - New Card Design -->
-  <div class="dash-section" id="sec-history">
-    <div class="inner-header"><span style="font-size:22px">📋</span><div><div class="inner-title">Records</div><div class="inner-sub">All your transactions</div></div></div>
-    
-    <!-- Search and Filter -->
-    <div style="margin-bottom:16px;">
-      <input type="text" id="tx-search-box" placeholder="🔍 Search transactions..." class="tx-search-input" oninput="renderHistory()">
-    </div>
-    
-    <!-- Filter Pills -->
-    <div class="tx-filter-pills">
-      <button class="tx-pill active" onclick="setTxFilter('all',this)">All</button>
-      <button class="tx-pill" onclick="setTxFilter('Deposit',this)">💳 Deposits</button>
-      <button class="tx-pill" onclick="setTxFilter('Withdrawal',this)">💸 Withdrawals</button>
-      <button class="tx-pill" onclick="setTxFilter('Profit',this)">📈 Profits</button>
-      <button class="tx-pill" onclick="setTxFilter('Bonus',this)">🎁 Bonuses</button>
-      <button class="tx-pill" onclick="setTxFilter('Referral',this)">🔗 Referral</button>
-    </div>
-    
-    <!-- Transaction Cards -->
+  <div class="dash-section" id="sec-deposits-log">
+    <div class="inner-header"><span style="font-size:22px">💳</span><div><div class="inner-title">Deposits</div><div class="inner-sub">Your deposit history</div></div></div>
     <div class="section">
-      <div id="history-list" class="tx-cards-grid"><div class="tx-empty-state"><div class="tx-empty-icon">📭</div><div class="tx-empty-title">No Records Yet</div><div class="tx-empty-text">Your transaction history will appear here.</div></div></div>
+      <div id="deposits-log-list" class="tx-line-list"><div class="tx-empty-state"><div class="tx-empty-title">No Deposits Yet</div><div class="tx-empty-text">Your deposit history will appear here.</div></div></div>
+    </div>
+  </div>
+
+  <div class="dash-section" id="sec-withdrawals-log">
+    <div class="inner-header"><span style="font-size:22px">📤</span><div><div class="inner-title">Withdrawals</div><div class="inner-sub">Your withdrawal history</div></div></div>
+    <div class="section">
+      <div id="withdrawals-log-list" class="tx-line-list"><div class="tx-empty-state"><div class="tx-empty-title">No Withdrawals Yet</div><div class="tx-empty-text">Your withdrawal history will appear here.</div></div></div>
+    </div>
+  </div>
+
+  <div class="dash-section" id="sec-profits-log">
+    <div class="inner-header"><span style="font-size:22px">📈</span><div><div class="inner-title">Daily Profits</div><div class="inner-sub">Your profit history</div></div></div>
+    <div class="section">
+      <div id="profits-log-list" class="tx-line-list"><div class="tx-empty-state"><div class="tx-empty-title">No Profits Yet</div><div class="tx-empty-text">Your daily profits will appear here.</div></div></div>
+    </div>
+  </div>
+
+  <div class="dash-section" id="sec-referrals-log">
+    <div class="inner-header"><span style="font-size:22px">🔗</span><div><div class="inner-title">Referral Bonuses</div><div class="inner-sub">Your referral earnings history</div></div></div>
+    <div class="section">
+      <div id="referrals-log-list" class="tx-line-list"><div class="tx-empty-state"><div class="tx-empty-title">No Referral Bonuses Yet</div><div class="tx-empty-text">Your referral bonuses will appear here.</div></div></div>
     </div>
   </div>
 
@@ -824,10 +799,10 @@ input[type="password"]{padding-right:46px;}
     <div class="menu-item" onclick="menuNav('withdraw')">Withdraw</div>
     <div class="menu-item" onclick="menuNav('reinvest')">Re-invest</div>
     <div class="menu-divider"></div>
-    <div class="menu-item" onclick="menuNavFiltered('history','Deposit')">Deposits</div>
-    <div class="menu-item" onclick="menuNavFiltered('history','Withdrawal')">Withdraws</div>
-    <div class="menu-item" onclick="menuNavFiltered('history','Profit')">Daily Profits</div>
-    <div class="menu-item" onclick="menuNavFiltered('history','Referral')">Referral Bonuses</div>
+    <div class="menu-item" onclick="menuNav('deposits-log')">Deposits</div>
+    <div class="menu-item" onclick="menuNav('withdrawals-log')">Withdraws</div>
+    <div class="menu-item" onclick="menuNav('profits-log')">Daily Profits</div>
+    <div class="menu-item" onclick="menuNav('referrals-log')">Referral Bonuses</div>
     <div class="menu-divider"></div>
     <div class="menu-item" onclick="menuNav('team')">Referrals</div>
     <div class="menu-item" onclick="menuNav('profile')">Profile</div>
@@ -1254,7 +1229,7 @@ function closePrivacyModal(event) {
   document.getElementById('privacy-modal-overlay').classList.remove('open');
 }
 
-const tabMap = { home: 'sec-home', history: 'sec-history', team: 'sec-team', plan: 'sec-plan', profile: 'sec-profile', deposit: 'sec-deposit', withdraw: 'sec-withdraw', reinvest: 'sec-reinvest' };
+const tabMap = { home: 'sec-home', 'deposits-log': 'sec-deposits-log', 'withdrawals-log': 'sec-withdrawals-log', 'profits-log': 'sec-profits-log', 'referrals-log': 'sec-referrals-log', team: 'sec-team', plan: 'sec-plan', profile: 'sec-profile', deposit: 'sec-deposit', withdraw: 'sec-withdraw', reinvest: 'sec-reinvest' };
 const navOrder = ['home', 'team', 'plan', 'profile'];
 
 function switchTab(tab) {
@@ -1272,17 +1247,6 @@ function switchTab(tab) {
 }
 
 function menuNav(tab) { switchTab(tab); }
-
-function menuNavFiltered(tab, filterType) {
-  switchTab(tab);
-  const pills = document.querySelectorAll('.tx-pill');
-  pills.forEach(b => {
-    const onclickAttr = b.getAttribute('onclick') || '';
-    if (onclickAttr.includes(`'${filterType}'`)) {
-      setTxFilter(filterType, b);
-    }
-  });
-}
 
 function startSettingsListener() {
   db.ref('settings').on('value', (snap) => {
@@ -1506,73 +1470,46 @@ function updateWhatsAppButton() {
   }
 }
 
-let currentHistoryFilter = 'all';
-function setTxFilter(type, btnEl) {
-  currentHistoryFilter = type;
-  document.querySelectorAll('.tx-pill').forEach(b => b.classList.remove('active'));
-  if (btnEl) btnEl.classList.add('active');
-  renderHistory();
-}
-
 function renderHistory() {
-  const wrap = document.getElementById('history-list');
-  if (!currentUser) { if (wrap) wrap.innerHTML = ''; return; }
+  if (!currentUser) return;
   const allTxs = currentUser.transactions ? Object.values(currentUser.transactions).reverse() : [];
-  
-  // Get search query
-  const searchBox = document.getElementById('tx-search-box');
-  const searchQuery = (searchBox?.value || '').toLowerCase().trim();
-  
-  // Filter by type
-  let txs = allTxs;
-  if (currentHistoryFilter !== 'all') {
-    txs = allTxs.filter(tx => tx.type === currentHistoryFilter);
-  }
-  
-  // Filter by search
-  if (searchQuery) {
-    txs = txs.filter(tx => 
-      (tx.type || '').toLowerCase().includes(searchQuery) ||
-      (tx.note || '').toLowerCase().includes(searchQuery) ||
-      fmt(tx.amount).toLowerCase().includes(searchQuery)
-    );
-  }
-  
-  if (!txs.length) {
-    if (wrap) wrap.innerHTML = '<div class="tx-empty-state"><div class="tx-empty-icon">📭</div><div class="tx-empty-title">No Records Found</div><div class="tx-empty-text">Try adjusting your filters or search.</div></div>';
-    return;
-  }
-  
-  const typeIcons = { Deposit: '💳', Withdrawal: '💸', Profit: '📈', Bonus: '🎁', 'Re-Invest': '🔄', Referral: '🔗' };
-  const typeClasses = { Deposit: 'tx-deposit', Withdrawal: 'tx-withdrawal', Profit: 'tx-profit', Bonus: 'tx-bonus', Referral: 'tx-referral' };
-  
-  if (wrap) {
-    wrap.innerHTML = '<div class="tx-cards-grid">' + 
-      txs.map(tx => {
-        const isPending = tx.status === 'pending';
-        const isFailed = tx.status === 'failed';
-        const statusClass = isPending ? 'tx-status-pending' : isFailed ? 'tx-status-failed' : 'tx-status-completed';
-        const statusText = isPending ? '⏳ Pending' : isFailed ? '❌ Failed' : '✅ Completed';
-        const amountClass = tx.amount >= 0 ? 'positive' : 'negative';
-        const typeClass = typeClasses[tx.type] || 'tx-profit';
-        const icon = typeIcons[tx.type] || '💰';
-        const amountStr = tx.amount >= 0 ? '+' + fmt(tx.amount) : fmt(tx.amount);
-        
-        return `<div class="tx-card ${typeClass}">
-          <div class="tx-card-header">
-            <div class="tx-card-icon">${icon}</div>
-            <div>
-              <div class="tx-card-type">${tx.type || 'Transaction'}</div>
-              <div class="tx-card-date">${tx.date || '—'}</div>
-            </div>
-          </div>
-          <div class="tx-card-amount ${amountClass}">${amountStr}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span class="tx-card-status ${statusClass}">${statusText}</span>
-          </div>
-        </div>`;
-      }).join('') + '</div>';
-  }
+
+  const typeGroups = {
+    'deposits-log-list': { types: ['Deposit'], emptyTitle: 'No Deposits Yet', emptyText: 'Your deposit history will appear here.' },
+    'withdrawals-log-list': { types: ['Withdrawal'], emptyTitle: 'No Withdrawals Yet', emptyText: 'Your withdrawal history will appear here.' },
+    'profits-log-list': { types: ['Profit'], emptyTitle: 'No Profits Yet', emptyText: 'Your daily profits will appear here.' },
+    'referrals-log-list': { types: ['Referral'], emptyTitle: 'No Referral Bonuses Yet', emptyText: 'Your referral bonuses will appear here.' }
+  };
+
+  Object.keys(typeGroups).forEach(containerId => {
+    const wrap = document.getElementById(containerId);
+    if (!wrap) return;
+    const group = typeGroups[containerId];
+    const txs = allTxs.filter(tx => group.types.includes(tx.type));
+
+    if (!txs.length) {
+      wrap.innerHTML = `<div class="tx-empty-state"><div class="tx-empty-title">${group.emptyTitle}</div><div class="tx-empty-text">${group.emptyText}</div></div>`;
+      return;
+    }
+
+    wrap.innerHTML = txs.map(tx => {
+      const isPending = tx.status === 'pending';
+      const isFailed = tx.status === 'failed';
+      const statusClass = isPending ? 'tx-status-pending' : isFailed ? 'tx-status-failed' : 'tx-status-completed';
+      const statusText = isPending ? 'Pending' : isFailed ? 'Failed' : 'Completed';
+      const amountClass = tx.amount >= 0 ? 'positive' : 'negative';
+      const amountStr = tx.amount >= 0 ? '+' + fmt(tx.amount) : fmt(tx.amount);
+      const d = tx.timestamp ? new Date(tx.timestamp) : null;
+      const dateStr = d ? d.toLocaleDateString('en-UG', { day: '2-digit', month: 'short', year: 'numeric' }) : (tx.date || '—');
+      const timeStr = d ? d.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' }) : '';
+
+      return `<div class="tx-line-row">
+        <div class="tx-line-date">${dateStr}${timeStr ? ' · ' + timeStr : ''}</div>
+        <div class="tx-line-amount ${amountClass}">${amountStr}</div>
+        <div class="tx-line-status ${statusClass}">${statusText}</div>
+      </div>`;
+    }).join('');
+  });
 }
 
 function renderTeam() {
