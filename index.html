@@ -637,14 +637,14 @@ input[type="password"]{padding-right:46px;}
     
     <!-- 2 Stats Cards -->
     <div class="section">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="ref-stat-box" style="padding:16px;border:1px solid var(--border);border-radius:12px;text-align:center;">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">💰 EARNED</div>
-          <div style="font-size:20px;font-weight:800;color:var(--accent);" id="total-ref-earned-new">UGX 0</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="ref-stat-box" style="padding:10px;border:1px solid var(--border);border-radius:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:5px;">EARNED</div>
+          <div style="font-size:16px;font-weight:800;color:var(--accent);" id="total-ref-earned-new">UGX 0</div>
         </div>
-        <div class="ref-stat-box" style="padding:16px;border:1px solid var(--border);border-radius:12px;text-align:center;">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">👥 REFERRALS</div>
-          <div style="font-size:20px;font-weight:800;color:var(--success);" id="ref-team-count">0</div>
+        <div class="ref-stat-box" style="padding:10px;border:1px solid var(--border);border-radius:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:5px;">REFERRALS</div>
+          <div style="font-size:16px;font-weight:800;color:var(--success);" id="ref-team-count">0</div>
         </div>
       </div>
     </div>
@@ -652,8 +652,6 @@ input[type="password"]{padding-right:46px;}
     <!-- Referral Link Section -->
     <div class="section">
       <div style="padding:16px;border:1px solid var(--accent);border-radius:12px;background:rgba(212,175,55,0.08);">
-        <div style="font-size:13px;color:var(--accent);font-weight:600;margin-bottom:12px;">🔗 Share & Earn</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Invite friends, earn 10-2% on 3 levels</div>
         <div style="display:flex;gap:8px;">
           <input type="text" class="ref-link-input" id="ref-url-new" readonly style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;">
           <button class="ref-copy-btn" onclick="copyRef()" style="padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;">Copy</button>
@@ -1512,6 +1510,11 @@ function renderHistory() {
   });
 }
 
+function maskPhone(phone) {
+  if (!phone || phone.length < 8) return '—';
+  return phone.slice(0, 6) + '****' + phone.slice(-3);
+}
+
 function renderTeam() {
   if (!currentUser) return;
   let totalRefBonus = 0;
@@ -1526,11 +1529,13 @@ function renderTeam() {
     if (membersWrap) membersWrap.innerHTML = '<div class="ref-empty-state"><div class="ref-empty-emoji">🤝</div><div class="ref-empty-msg">No team members yet</div><div class="ref-empty-hint">Invite friends to start earning</div></div>';
     return;
   }
+  const pctByLevel = { 1: (settingsData.refL1 || 10) / 100, 2: (settingsData.refL2 || 4) / 100, 3: (settingsData.refL3 || 2) / 100 };
   if (membersWrap) {
     membersWrap.innerHTML = '<div class="ref-members-list">' + refs.map((r) => {
-      const isActive = (r.invested || 0) > 0;
-      const statusIcon = isActive ? '🟢' : '⏳';
-      return `<div class="ref-member-item"><div class="ref-member-name">${r.username}</div><div class="ref-member-info"><span class="ref-member-level">L${r.level}</span><span class="ref-member-status">${statusIcon} ${isActive ? 'Active' : 'Inactive'}</span></div></div>`;
+      const invested = r.invested || 0;
+      const bonusEarned = Math.floor(invested * (pctByLevel[r.level] || 0));
+      const phoneDisplay = maskPhone(r.phone);
+      return `<div class="ref-member-item"><div class="ref-member-name">${phoneDisplay}</div><div class="ref-member-info"><span class="ref-member-status">Invested: ${fmt(invested)}</span><span class="ref-member-status">Bonus: ${fmt(bonusEarned)}</span><span class="ref-member-level">(${r.level})</span></div></div>`;
     }).join('') + '</div>';
   }
 }
@@ -2071,14 +2076,14 @@ async function doRegister() {
     const referrerSnap = await db.ref('users/' + safeKey(refCode)).get();
     if (referrerSnap.exists()) {
       const referrer = referrerSnap.val();
-      await db.ref('users/' + safeKey(refCode) + '/referrals/' + safeKey(username)).set({ username, invested: 0, level: 1 });
+      await db.ref('users/' + safeKey(refCode) + '/referrals/' + safeKey(username)).set({ username, phone: convertedPhone, invested: 0, level: 1 });
       if (referrer.referredBy) {
         const level2Snap = await db.ref('users/' + safeKey(referrer.referredBy)).get();
         if (level2Snap.exists()) {
-          await db.ref('users/' + safeKey(referrer.referredBy) + '/referrals/' + safeKey(username)).set({ username, invested: 0, level: 2 });
+          await db.ref('users/' + safeKey(referrer.referredBy) + '/referrals/' + safeKey(username)).set({ username, phone: convertedPhone, invested: 0, level: 2 });
           const level2Data = level2Snap.val();
           if (level2Data.referredBy) {
-            await db.ref('users/' + safeKey(level2Data.referredBy) + '/referrals/' + safeKey(username)).set({ username, invested: 0, level: 3 });
+            await db.ref('users/' + safeKey(level2Data.referredBy) + '/referrals/' + safeKey(username)).set({ username, phone: convertedPhone, invested: 0, level: 3 });
           }
         }
       }

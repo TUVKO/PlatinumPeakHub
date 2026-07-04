@@ -984,7 +984,7 @@ async function saveReferrer(sk) {
   // Add to new referrer's list
   if (newReferrer) {
     const newRefKey = safeKey(newReferrer);
-    await db.ref('users/' + newRefKey + '/referrals/' + sk).set({ username: user.username, invested: 0, level: 1 });
+    await db.ref('users/' + newRefKey + '/referrals/' + sk).set({ username: user.username, phone: user.phone || '', invested: 0, level: 1 });
   }
   
   toast('✅ Referrer updated for ' + user.username);
