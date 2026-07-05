@@ -166,13 +166,6 @@ input[type="password"]{padding-right:46px;}
 .whatsapp-float:hover{transform:scale(1.08);}
 
 /* Investment Active Card */
-.investment-card{background:var(--surface);border:2px solid var(--accent);border-radius:50%;width:120px;height:120px;padding:0;margin:0 auto 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
-.investment-title{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
-.investment-amount{font-size:14px;font-weight:800;font-family:'Courier New',monospace;color:var(--accent);margin-bottom:2px;}
-.investment-progress{display:none;}
-.investment-progress-fill{background:var(--accent);height:100%;border-radius:10px;transition:width 0.3s;}
-.investment-days{display:none;}
-.investment-status{display:none;}
 
 /* Table (Scrollable) */
 .plan-wrap{background:#fff;border:2px solid #000;border-radius:0;overflow:hidden;}
@@ -551,15 +544,6 @@ input[type="password"]{padding-right:46px;}
     </div>
 
     <!-- Active Investment Display -->
-    <div class="section" id="active-investment-section" style="display:none;">
-      <div class="investment-card">
-        <div class="investment-title">📈 ACTIVE INVESTMENT</div>
-        <div class="investment-amount" id="active-stake-amount">UGX 0</div>
-        <div class="investment-progress"><div class="investment-progress-fill" id="investment-progress-fill" style="width:0%"></div></div>
-        <div class="investment-days"><span id="days-completed">0</span><span>Day 50</span></div>
-        <div class="investment-status" id="investment-status">Generating 10% daily profit</div>
-      </div>
-    </div>
 
     <div class="section">
       <div class="ph-invite-card">
@@ -1008,11 +992,14 @@ async function calculateAndPayDailyProfits() {
     updatedActiveInvestment.daysRun = newDaysRun;
     
     // STEP 9: ATOMIC UPDATE - write everything together
+    const profitTimestamp = Date.now();
+    const dayLabel = daysDiff === 1 ? '1 day' : daysDiff + ' days';
     const updates = {
       balance: newBalance,
       totalEarned: newTotalEarned,
       lastProfitDate: todayKey,
-      activeInvestment: updatedActiveInvestment
+      activeInvestment: updatedActiveInvestment,
+      [`transactions/tx_dailyprofit_${profitTimestamp}`]: { type: 'Profit', amount: totalProfit, note: 'Daily profit (' + dayLabel + ')', date: dateStr(), status: 'completed', timestamp: profitTimestamp }
     };
     
     await userRef.update(updates);
@@ -1400,26 +1387,7 @@ async function cleanupOldTransactions() {
 }
 
 function updateActiveInvestmentDisplay() {
-  const section = document.getElementById('active-investment-section');
-  if (!currentUser || !currentUser.activeInvestment || (currentUser.stake || 0) === 0) {
-    if (section) section.style.display = 'none';
-    return;
-  }
-  const inv = currentUser.activeInvestment;
-  const stakeAmount = currentUser.stake || 0;
-  const daysRun = inv.daysRun || 0;
-  const totalDays = (settingsData && settingsData.earningPeriod) || 50;
-  const progress = (daysRun / totalDays) * 100;
-  document.getElementById('active-stake-amount').textContent = fmt(stakeAmount);
-  document.getElementById('investment-progress-fill').style.width = progress + '%';
-  document.getElementById('days-completed').textContent = daysRun;
-  if (daysRun >= totalDays) {
-    document.getElementById('investment-status').textContent = '✅ Investment completed! Re-invest to continue earning.';
-  } else {
-    const remaining = totalDays - daysRun;
-    document.getElementById('investment-status').textContent = `📈 Generating 10% daily profit — ${remaining} days remaining`;
-  }
-  if (section) section.style.display = 'block';
+  // Active investment display permanently removed
 }
 
 function startUserListener(username) {
