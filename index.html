@@ -1586,11 +1586,13 @@ async function checkPendingDeposits(username) {
           const user = userSnap.val();
           const newStake = (user.stake || 0) + amount;
           const newBalance = (user.balance || 0) + amount;
+          const todayKeyForProfit = getDateKey(new Date());
           
           await userRef.update({ 
             stake: newStake, 
             balance: newBalance,
-            activeInvestment: { amount: newStake, startDate: dateStr(), daysLeft: 56, dailyProfit: 0 }
+            activeInvestment: { amount: newStake, startDate: dateStr(), daysLeft: 56, dailyProfit: 0 },
+            lastProfitDate: todayKeyForProfit
           });
           
           // Update UI silently if user is currently viewing

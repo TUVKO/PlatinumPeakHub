@@ -756,6 +756,13 @@ let adminTxUnsubscribe = null;
 
 function fmt(n) { return 'UGX ' + Number(n || 0).toLocaleString(); }
 function dateStr() { const d = new Date(); return d.toLocaleDateString('en-UG', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' }); }
+function getDateKey(d) {
+  if (!d) d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 function safeKey(u) { return (u || '').replace(/[.#$\[\]]/g, '_'); }
 function genUUID() { return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)); }
 
@@ -1030,7 +1037,8 @@ async function saveEditUser() {
     const addedAmount = newStake - (user.stake || 0);
     const instantProfit = Math.floor(addedAmount * 0.10);
     updates.balance = newBalance + instantProfit;
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getDateKey(new Date());
+    updates.lastProfitDate = todayKey;
     const depKey = 'dep_' + Date.now();
     updates['deposits/' + depKey] = {
       amount: addedAmount,
