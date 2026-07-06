@@ -803,6 +803,36 @@ function confirmAction(title, text) { return Swal.fire({ title, text, icon: 'war
 function setErr(id, show, msg) { const el = document.getElementById(id); if (!el) return; if (show) { el.classList.add('show'); if (msg) el.textContent = msg; } else { el.classList.remove('show'); } }
 function clearErrors(...ids) { ids.forEach(id => setErr(id, false)); }
 
+// Force fresh data when tab becomes visible again (mobile browsers suspend
+// background tabs, which can silently drop the realtime WebSocket connection)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && document.getElementById('admin-wrap')?.classList.contains('active')) {
+    forceRefreshAdminData();
+  }
+});
+
+async function forceRefreshAdminData() {
+  try {
+    const [usersSnap, settingsSnap, withdrawalsSnap, adminTxSnap] = await Promise.all([
+      db.ref('users').get(),
+      db.ref('settings').get(),
+      db.ref('pendingWithdrawals').get(),
+      db.ref('adminTransactions').get()
+    ]);
+    allUsers = usersSnap.val() || {};
+    allSettings = settingsSnap.val() || allSettings;
+    allWithdrawals = withdrawalsSnap.val() || {};
+    allAdminTransactions = adminTxSnap.val() || {};
+    renderDashboard();
+    renderUsersTable();
+    renderTube();
+    renderTransactions();
+    loadSettingsUI();
+    renderWithdrawals();
+    renderAdminTransactions();
+  } catch (e) { console.warn('Force refresh error:', e); }
+}
+
 function startRealtimeListeners() {
   if (usersUnsubscribe) usersUnsubscribe();
   usersUnsubscribe = db.ref('users').on('value', (snap) => {

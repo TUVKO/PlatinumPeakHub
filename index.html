@@ -1017,6 +1017,35 @@ async function calculateAndPayDailyProfits() {
 // ============================================================
 // Loading screen hides immediately after login check
 // ============================================================
+// Force fresh data when tab becomes visible again (mobile browsers suspend
+// background tabs, which can silently drop the realtime WebSocket connection)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && currentUsername) {
+    forceRefreshUserData();
+  }
+});
+
+async function forceRefreshUserData() {
+  try {
+    const [userSnap, settingsSnap] = await Promise.all([
+      db.ref('users/' + safeKey(currentUsername)).get(),
+      db.ref('settings').get()
+    ]);
+    if (userSnap.exists()) {
+      currentUser = userSnap.val();
+      await calculateAndPayDailyProfits().catch(err => console.warn('Profit calc error:', err));
+      updateBalanceUI();
+      renderHistory();
+      renderTeam();
+      updateProfileUI();
+    }
+    if (settingsSnap.exists()) {
+      Object.assign(settingsData, settingsSnap.val());
+      updateUIWithSettings();
+    }
+  } catch (e) { console.warn('Force refresh error:', e); }
+}
+
 async function initApp() {
   initTheme();
   startSettingsListener();
