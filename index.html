@@ -511,33 +511,33 @@ input[type="password"]{padding-right:46px;}
       <div class="ph-balance-card">
         <div class="ph-balance-row">
           <div class="ph-balance-col">
-            <div class="ph-balance-label">Account Balance</div>
+            <div class="ph-balance-label">Wallet Balance</div>
             <div class="ph-balance-value" id="stat-balance">UGX 0</div>
           </div>
           <div class="ph-balance-divider"></div>
           <div class="ph-balance-col" style="text-align:right;">
-            <div class="ph-balance-label">Today's Earnings</div>
+            <div class="ph-balance-label">Today's Profit</div>
             <div class="ph-balance-value ph-green" id="stat-today-earnings">+UGX 0</div>
           </div>
         </div>
         <div class="ph-hr"></div>
         <div class="ph-stats-row">
           <div class="ph-stat-col">
-            <div class="ph-stat-label">Investment</div>
+            <div class="ph-stat-label">Active Capital</div>
             <div class="ph-stat-value" id="stat-stake">UGX 0</div>
           </div>
           <div class="ph-stat-col">
-            <div class="ph-stat-label">Earnings</div>
+            <div class="ph-stat-label">Total Profit</div>
             <div class="ph-stat-value" id="stat-income">UGX 0</div>
           </div>
           <div class="ph-stat-col">
-            <div class="ph-stat-label">Withdraws</div>
+            <div class="ph-stat-label">Withdrawn</div>
             <div class="ph-stat-value" id="stat-withdrawn">UGX 0</div>
           </div>
         </div>
         <div class="ph-hr"></div>
         <div class="ph-ref-row">
-          <div class="ph-ref-label">Referral Earnings</div>
+          <div class="ph-ref-label">Referral Income</div>
           <div class="ph-ref-value" id="stat-ref-earnings">UGX 0</div>
         </div>
       </div>
@@ -926,7 +926,7 @@ function genUUID() { return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^
 let currentUser = null;
 let currentUsername = null;
 let settingsData = {
-  uraTax: 4, withdrawCharge: 10, refL1: 10, refL2: 4, refL3: 2,
+  uraTax: 4, withdrawCharge: 10, refL1: 10, refL2: 5, refL3: 2,
   waGroup: '', waSupport: '', withdrawLocked: false, withdrawApproval: false,
   minDeposit: 10000, maxDeposit: 2350000, minWithdraw: 10000, waNumber: '700000000', marzApiKey: ''
 };
@@ -1283,7 +1283,7 @@ function updateUIWithSettings() {
   const pctL2 = document.getElementById('ref-pct-l2-new');
   const pctL3 = document.getElementById('ref-pct-l3-new');
   if (pctL1) pctL1.textContent = (settingsData.refL1 || 10) + '%';
-  if (pctL2) pctL2.textContent = (settingsData.refL2 || 4) + '%';
+  if (pctL2) pctL2.textContent = (settingsData.refL2 || 5) + '%';
   if (pctL3) pctL3.textContent = (settingsData.refL3 || 2) + '%';
   const withInp = document.getElementById('with-amount');
   if (withInp) withInp.min = minWith;
@@ -1521,7 +1521,7 @@ function renderTeam() {
     if (membersWrap) membersWrap.innerHTML = '<div class="ref-empty-state"><div class="ref-empty-msg">No team members yet</div><div class="ref-empty-hint">Invite friends to start earning</div></div>';
     return;
   }
-  const pctByLevel = { 1: (settingsData.refL1 || 10) / 100, 2: (settingsData.refL2 || 4) / 100, 3: (settingsData.refL3 || 2) / 100 };
+  const pctByLevel = { 1: (settingsData.refL1 || 10) / 100, 2: (settingsData.refL2 || 5) / 100, 3: (settingsData.refL3 || 2) / 100 };
   if (membersWrap) {
     membersWrap.innerHTML = '<div class="ref-members-list">' + refs.map((r) => {
       const invested = r.invested || 0;
@@ -1760,7 +1760,7 @@ async function creditReferralBonuses(depositorUsername, amount) {
   const depositor = depositorSnap.val();
   if (!depositor.referredBy) return;
   const pctL1 = (settingsData.refL1 || 10) / 100;
-  const pctL2 = (settingsData.refL2 || 4) / 100;
+  const pctL2 = (settingsData.refL2 || 5) / 100;
   const pctL3 = (settingsData.refL3 || 2) / 100;
   let uplineUsername = depositor.referredBy;
   for (let i = 0; i < 3; i++) {
