@@ -766,38 +766,6 @@ function getDateKey(d) {
 function safeKey(u) { return (u || '').replace(/[.#$\[\]]/g, '_'); }
 function genUUID() { return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)); }
 
-// ===== DATA CACHING SYSTEM =====
-const CACHE_KEY = 'admin_dashboard_cache';
-const CACHE_TIMESTAMP_KEY = 'admin_cache_timestamp';
-
-function getCachedData() {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    return cached ? JSON.parse(cached) : null;
-  } catch (e) {
-    console.error('Cache read error:', e);
-    return null;
-  }
-}
-
-function setCachedData(data) {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-  } catch (e) {
-    console.error('Cache write error:', e);
-  }
-}
-
-function clearCache() {
-  try {
-    localStorage.removeItem(CACHE_KEY);
-    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
-  } catch (e) {
-    console.error('Cache clear error:', e);
-  }
-}
-
 function toast(msg, color) { const t = document.getElementById('toast'); t.textContent = msg; t.style.background = color || 'var(--accent3)'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800); }
 function confirmAction(title, text) { return Swal.fire({ title, text, icon: 'warning', showCancelButton: true, confirmButtonColor: '#4dd9e8', confirmButtonText: 'Yes, proceed!' }).then(result => result.isConfirmed); }
 function setErr(id, show, msg) { const el = document.getElementById(id); if (!el) return; if (show) { el.classList.add('show'); if (msg) el.textContent = msg; } else { el.classList.remove('show'); } }
@@ -906,6 +874,8 @@ function startRealtimeListeners() {
 }
 
 function renderDashboard() {
+  const loadingMsg = document.getElementById('dashboard-loading-msg');
+  if (loadingMsg) loadingMsg.remove();
   const users = Object.values(allUsers);
   let totalStake = 0, totalBalance = 0, totalWithdrawn = 0, locked = 0, activeInvestors = 0;
   users.forEach(u => {
@@ -1947,24 +1917,16 @@ function showPanel() {
   document.getElementById('auth-wrap').style.display = 'none';
   document.getElementById('admin-wrap').classList.add('active');
   
-  // Try to use cached data first
-  const cachedData = getCachedData();
-  if (cachedData) {
-    allUsers = cachedData.users || {};
-    allSettings = cachedData.settings || allSettings;
-    allWithdrawals = cachedData.withdrawals || {};
-    allAdminTransactions = cachedData.adminTx || {};
-    
-    renderDashboard();
-    renderUsersTable();
-    renderTube();
-    renderTransactions();
-    loadSettingsUI();
-    renderWithdrawals();
-    renderAdminTransactions();
+  // Show a loading state until real, current data arrives — never display stale cached numbers
+  const dashSection = document.getElementById('pg-dashboard');
+  if (dashSection) {
+    const loadingMsg = document.createElement('div');
+    loadingMsg.id = 'dashboard-loading-msg';
+    loadingMsg.style.cssText = 'text-align:center;padding:40px;color:var(--muted);font-size:13px;';
+    loadingMsg.textContent = 'Loading live data...';
+    dashSection.prepend(loadingMsg);
   }
   
-  // Always start listeners for real-time updates (but don't show loading if cache exists)
   startRealtimeListeners();
 }
 
