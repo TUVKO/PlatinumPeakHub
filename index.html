@@ -144,26 +144,6 @@ input[type="password"]{padding-right:46px;}
 .btn-transactions{background:var(--accent2);color:#fff;}
 
 /* Floating WhatsApp Icon */
-.whatsapp-float{
-  position:fixed;
-  bottom:80px;
-  right:20px;
-  width:55px;
-  height:55px;
-  background:#25D366;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:28px;
-  cursor:pointer;
-  box-shadow:0 4px 20px rgba(37,211,102,.4);
-  z-index:300;
-  transition:transform .2s;
-  color:#fff;
-  text-decoration:none;
-}
-.whatsapp-float:hover{transform:scale(1.08);}
 
 /* Investment Active Card */
 
@@ -351,8 +331,14 @@ input[type="password"]{padding-right:46px;}
 .ref-member-status{color:var(--muted);}
 
 /* WA Button */
-.wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:fit-content;margin-left:auto;background:#25D366;border:none;border-radius:14px;padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
-.wa-btn:active{transform:scale(.98);}
+.zx-support-wrap{position:fixed;bottom:80px;right:20px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.zx-support-btn{background:#22c55e;border:none;border-radius:20px;padding:12px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(34,197,94,.4);transition:transform .2s;}
+.zx-support-btn:active{transform:scale(.96);}
+.zx-support-dropdown{display:none;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.2);min-width:190px;}
+.zx-support-dropdown.open{display:flex;}
+.zx-support-item{padding:12px 16px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border-bottom:1px solid var(--border);}
+.zx-support-item:last-child{border-bottom:none;}
+.zx-support-item:active{background:var(--surface2);}
 
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;}
 .loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
@@ -577,14 +563,17 @@ input[type="password"]{padding-right:46px;}
         </div>
       </div>
     </div>
-
-    <div class="section">
-      <button class="wa-btn" onclick="openWaGroup()">💬 Join our channel</button>
-    </div>
   </div>
 
-  <!-- Floating WhatsApp Icon -->
-  <a href="#" id="whatsapp-float-btn" class="whatsapp-float" target="_blank">💬</a>
+  <!-- ZxSupport Floating Tab -->
+  <div class="zx-support-wrap">
+    <div class="zx-support-dropdown" id="zx-support-dropdown">
+      <a href="#" id="zx-telegram-link" class="zx-support-item" target="_blank">Telegram Channel</a>
+      <a href="#" id="zx-wa-group-link" class="zx-support-item" target="_blank">WhatsApp Community</a>
+      <a href="#" id="zx-wa-support-link" class="zx-support-item" target="_blank">WhatsApp Support Chat</a>
+    </div>
+    <button class="zx-support-btn" onclick="toggleSupportMenu()">ZxSupport</button>
+  </div>
 
   <!-- History - New Card Design -->
   <div class="dash-section" id="sec-deposits-log">
@@ -927,7 +916,7 @@ let currentUser = null;
 let currentUsername = null;
 let settingsData = {
   uraTax: 4, withdrawCharge: 10, refL1: 10, refL2: 5, refL3: 2,
-  waGroup: '', waSupport: '', withdrawLocked: false, withdrawApproval: false,
+  waGroup: '', waSupport: '', telegramLink: '', withdrawLocked: false, withdrawApproval: false,
   minDeposit: 10000, maxDeposit: 2350000, minWithdraw: 10000, waNumber: '700000000', marzApiKey: ''
 };
 let profitInterval = null;
@@ -1078,7 +1067,7 @@ async function initApp() {
         renderTeam();
         updateReferralLink();
         updateProfileUI();
-        updateWhatsAppButton();
+        updateSupportLinks();
         showDashboard();
         switchTab('home');
         startDailyProfitLoop();
@@ -1178,9 +1167,22 @@ function copyRef() {
   }
 }
 
-function openWaGroup() {
-  if (settingsData.waGroup) window.open(settingsData.waGroup, '_blank');
-  // No modal - just silent fail
+function toggleSupportMenu() {
+  const dropdown = document.getElementById('zx-support-dropdown');
+  if (dropdown) dropdown.classList.toggle('open');
+}
+
+function updateSupportLinks() {
+  const telegramLink = document.getElementById('zx-telegram-link');
+  const waGroupLink = document.getElementById('zx-wa-group-link');
+  const waSupportLink = document.getElementById('zx-wa-support-link');
+  if (telegramLink) telegramLink.href = settingsData.telegramLink || '#';
+  if (waGroupLink) waGroupLink.href = settingsData.waGroup || '#';
+  if (waSupportLink && currentUser) {
+    const phone = settingsData.waNumber || '700000000';
+    const message = `Hey, I'm ${currentUser.username}, I need assistance with my platinum-Peak-Hub investment account. Please help me!`;
+    waSupportLink.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  }
 }
 
 function showAuth(id) {
@@ -1429,7 +1431,7 @@ function startUserListener(username) {
       renderTeam();
       updateReferralLink();
       updateProfileUI();
-      updateWhatsAppButton();
+      updateSupportLinks();
     }
   });
 }
@@ -1451,14 +1453,6 @@ function updateProfileUI() {
   document.getElementById('with-phone-note').textContent = currentUser.phone || '—';
 }
 
-function updateWhatsAppButton() {
-  const waBtn = document.getElementById('whatsapp-float-btn');
-  if (waBtn && currentUser) {
-    const phone = settingsData.waNumber || '700000000';
-    const message = `Hey, I'm ${currentUser.username}, I need assistance with my platinum-Peak-Hub investment account. Please help me! 📈`;
-    waBtn.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-  }
-}
 
 function renderHistory() {
   if (!currentUser) return;
@@ -2004,7 +1998,7 @@ async function doLogin() {
     renderTeam();
     updateReferralLink();
     updateProfileUI();
-    updateWhatsAppButton();
+    updateSupportLinks();
     showDashboard();
     switchTab('home');
     startDailyProfitLoop();
@@ -2092,7 +2086,7 @@ async function doRegister() {
   renderTeam();
   updateReferralLink();
   updateProfileUI();
-  updateWhatsAppButton();
+  updateSupportLinks();
   showDashboard();
   switchTab('home');
   startDailyProfitLoop();
