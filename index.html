@@ -73,6 +73,13 @@ select{cursor:pointer;}select option{background:var(--surface2);}
 input[type="password"]{padding-right:46px;}
 .field-hint{font-size:10px;color:var(--muted);margin-top:5px;padding-left:4px;}
 .field-error{font-size:10px;color:var(--warn);margin-top:5px;padding-left:4px;display:none;}
+.fin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 16px;}
+.fin-card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.fin-req-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.fin-req-row:last-of-type{border-bottom:none;}
+.fin-req-label{font-size:12px;color:var(--muted);font-weight:600;}
+.fin-req-value{font-size:13px;font-weight:800;color:var(--text);}
+.fin-note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px;}
 .field-error.show{display:block;}
 
 .submit-btn{width:100%;background:var(--accent);border:none;border-radius:14px;padding:16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;margin-top:6px;}
@@ -203,7 +210,15 @@ input[type="password"]{padding-right:46px;}
 .profile-stat-value{font-size:18px;font-weight:800;font-family:'Courier New',monospace;color:var(--accent);}
 .logout-dash-new{width:100%;background:var(--warn);border:none;border-radius:14px;color:#fff;padding:15px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
 .logout-dash-new:active{transform:scale(.98);}
-.profile-simple-info{display:flex;flex-direction:column;gap:0;margin-bottom:24px;border-bottom:1px solid var(--border);}
+.acc-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.acc-item{border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.acc-header{padding:14px 16px;font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--surface);}
+.acc-arrow{transition:transform .25s;color:var(--muted);font-size:12px;}
+.acc-item.open .acc-arrow{transform:rotate(180deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--surface);}
+.acc-item.open .acc-body{max-height:500px;}
+.acc-text{font-size:12px;line-height:1.6;color:var(--muted);padding:0 16px 16px;}
+
 .profile-simple-item{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:16px 0;display:flex;align-items:center;justify-content:space-between;}
 .profile-simple-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;}
 .profile-simple-value{font-size:14px;font-weight:700;font-family:'Courier New',monospace;color:var(--muted);}
@@ -561,6 +576,10 @@ input[type="password"]{padding-right:46px;}
           <div class="ph-action-icon" style="background:#f3e8fd;">👥</div>
           <div class="ph-action-label">Referrals</div>
         </div>
+        <div class="ph-action-tile" onclick="switchTab('financing')">
+          <div class="ph-action-icon" style="background:#fff4e0;">🏦</div>
+          <div class="ph-action-label">Financing</div>
+        </div>
       </div>
     </div>
   </div>
@@ -641,7 +660,65 @@ input[type="password"]{padding-right:46px;}
     </div>
   </div>
 
-  <!-- Returns Plan -->
+  <!-- Financing / Loans -->
+  <div class="dash-section" id="sec-financing">
+    <div class="inner-header"><div><div class="inner-title">Financing</div><div class="inner-sub">Borrow against your active capital</div></div></div>
+
+    <div class="section" id="financing-not-qualified" style="display:none;">
+      <div class="fin-card">
+        <div class="fin-card-title">Financing Qualification</div>
+        <div class="fin-req-row">
+          <span class="fin-req-label">Active Capital</span>
+          <span class="fin-req-value" id="fin-req-capital">UGX 0 / UGX 100,000</span>
+        </div>
+        <div class="fin-req-row">
+          <span class="fin-req-label">Active Referrals</span>
+          <span class="fin-req-value" id="fin-req-referrals">0 / 40</span>
+        </div>
+        <div class="fin-note">Keep growing your active capital and inviting friends who invest to unlock Financing.</div>
+      </div>
+    </div>
+
+    <div class="section" id="financing-qualified" style="display:none;">
+      <div class="fin-card">
+        <div class="fin-card-title">You're Qualified</div>
+        <div class="fin-note">You can borrow up to your active capital. Total repayment is 110% of the loan amount (10% interest), automatically deducted from your daily profits until fully repaid.</div>
+        <div class="field-group" style="margin-top:14px;">
+          <label class="field-label">Loan Amount (UGX)</label>
+          <div class="field-wrap"><input type="number" id="loan-amount-input" placeholder="Enter amount"></div>
+          <div class="field-error" id="loan-amount-err">Enter a valid amount within your limit</div>
+        </div>
+        <button class="green-btn" id="loan-request-btn" onclick="requestLoan()">REQUEST LOAN</button>
+      </div>
+    </div>
+
+    <div class="section" id="financing-pending" style="display:none;">
+      <div class="fin-card">
+        <div class="fin-card-title">Request Pending</div>
+        <div class="fin-note">Your loan request of <strong id="fin-pending-amount">UGX 0</strong> is being reviewed. You'll be notified once it's ready.</div>
+      </div>
+    </div>
+
+    <div class="section" id="financing-active" style="display:none;">
+      <div class="fin-card">
+        <div class="fin-card-title">Active Loan</div>
+        <div class="fin-req-row">
+          <span class="fin-req-label">Amount Borrowed</span>
+          <span class="fin-req-value" id="fin-loan-principal">UGX 0</span>
+        </div>
+        <div class="fin-req-row">
+          <span class="fin-req-label">Total Owed (110%)</span>
+          <span class="fin-req-value" id="fin-loan-total">UGX 0</span>
+        </div>
+        <div class="fin-req-row">
+          <span class="fin-req-label">Remaining Balance</span>
+          <span class="fin-req-value" id="fin-loan-remaining" style="color:#ef4444;">UGX 0</span>
+        </div>
+        <div class="fin-note">Your daily profit is automatically applied to this balance until it reaches zero.</div>
+      </div>
+    </div>
+  </div>
+
   <div class="dash-section" id="sec-plan">
     <div class="inner-header"><span style="font-size:22px">🎯</span><div><div class="inner-title">Yield</div><div class="inner-sub" id="yield-subtitle">10% daily for 50 days (500% total)</div></div></div>
     <div class="section">
@@ -664,14 +741,49 @@ input[type="password"]{padding-right:46px;}
 
   <!-- Profile -->
   <div class="dash-section" id="sec-profile">
-    <div class="inner-header"><span style="font-size:22px">👤</span><div><div class="inner-title">About</div><div class="inner-sub">Your account details</div></div></div>
+    <div class="inner-header"><div><div class="inner-title">About</div><div class="inner-sub">Your account details</div></div></div>
     <div class="section">
-      <div class="profile-simple-info">
-        <div class="profile-simple-item"><span class="profile-simple-label">Username</span><span class="profile-simple-value" id="profile-user-simple">—</span></div>
-        <div class="profile-simple-item"><span class="profile-simple-label">Phone Number</span><span class="profile-simple-value" id="profile-phone-simple">—</span></div>
-        <div class="profile-simple-item"><span class="profile-simple-label">Registered Date</span><span class="profile-simple-value" id="profile-date-simple">—</span></div>
+      <div class="acc-list">
+        <div class="acc-item">
+          <div class="acc-header" onclick="toggleAccordion(this)">Account Details<span class="acc-arrow">▾</span></div>
+          <div class="acc-body">
+            <div class="profile-simple-item"><span class="profile-simple-label">Username</span><span class="profile-simple-value" id="profile-user-simple">—</span></div>
+            <div class="profile-simple-item"><span class="profile-simple-label">Email Address</span><span class="profile-simple-value" id="profile-email-simple">—</span></div>
+            <div class="profile-simple-item"><span class="profile-simple-label">Registered Date</span><span class="profile-simple-value" id="profile-date-simple">—</span></div>
+            <div class="profile-simple-item"><span class="profile-simple-label">Referred By</span><span class="profile-simple-value" id="profile-referrer-simple">—</span></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <div class="acc-header" onclick="toggleAccordion(this)">How It Works<span class="acc-arrow">▾</span></div>
+          <div class="acc-body">
+            <p class="acc-text">platinum-Peak-Hub pays 10% profit daily on your active deposited capital, for 50 days — a total return of 500% over the full cycle. Once your 50-day cycle completes, you can re-invest your balance to start a new cycle and keep earning.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <div class="acc-header" onclick="toggleAccordion(this)">How to Deposit<span class="acc-arrow">▾</span></div>
+          <div class="acc-body">
+            <p class="acc-text">Go to "Add Money" from your dashboard, enter your mobile money phone number and the amount you want to invest, then tap Invest Now. Your deposit is confirmed automatically once payment goes through, and your 50-day earning cycle begins right away.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <div class="acc-header" onclick="toggleAccordion(this)">How to Withdraw<span class="acc-arrow">▾</span></div>
+          <div class="acc-body">
+            <p class="acc-text">Go to "Withdraw" from your dashboard, enter the amount you want to cash out, then tap Withdraw. Funds are sent automatically to your registered mobile money number — no manual approval needed.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <div class="acc-header" onclick="toggleAccordion(this)">How to Refer Friends<span class="acc-arrow">▾</span></div>
+          <div class="acc-body">
+            <p class="acc-text">Share your personal invite link from the Referrals page with friends and family. When they sign up and invest, you automatically earn a commission on their deposit — plus smaller commissions on your 2nd and 3rd level network too.</p>
+          </div>
+        </div>
       </div>
-      <button class="logout-btn-new" onclick="doLogout()">🚪 Sign Out</button>
+
+      <button class="logout-btn-new" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
 
@@ -962,7 +1074,27 @@ async function calculateAndPayDailyProfits() {
     
     // STEP 5: Calculate profit
     const dailyProfit = Math.floor(stake * 0.10);
-    const totalProfit = dailyProfit * daysDiff;
+    let totalProfit = dailyProfit * daysDiff;
+
+    // STEP 5B: Intercept profit for active loan repayment, if any
+    let loanUpdateFields = {};
+    let loanRepaidNote = '';
+    const activeLoan = userData.activeLoan || null;
+    if (activeLoan && activeLoan.status === 'active') {
+      const remaining = activeLoan.remaining || 0;
+      if (totalProfit >= remaining) {
+        // Loan fully repaid; remainder (if any) goes to balance
+        const leftover = totalProfit - remaining;
+        loanUpdateFields.activeLoan = null;
+        loanRepaidNote = 'Loan repayment (final): -' + remaining;
+        totalProfit = leftover;
+      } else {
+        // Entire profit goes to loan; nothing left for balance today
+        loanUpdateFields.activeLoan = Object.assign({}, activeLoan, { remaining: remaining - totalProfit });
+        loanRepaidNote = 'Loan repayment: -' + totalProfit;
+        totalProfit = 0;
+      }
+    }
     
     // STEP 6: Update balance
     const currentBalance = userData.balance || 0;
@@ -983,13 +1115,17 @@ async function calculateAndPayDailyProfits() {
     // STEP 9: ATOMIC UPDATE - write everything together
     const profitTimestamp = Date.now();
     const dayLabel = daysDiff === 1 ? '1 day' : daysDiff + ' days';
-    const updates = {
+    const updates = Object.assign({
       balance: newBalance,
       totalEarned: newTotalEarned,
       lastProfitDate: todayKey,
       activeInvestment: updatedActiveInvestment,
-      [`transactions/tx_dailyprofit_${profitTimestamp}`]: { type: 'Profit', amount: totalProfit, note: 'Daily profit (' + dayLabel + ')', date: dateStr(), status: 'completed', timestamp: profitTimestamp }
-    };
+      [`transactions/tx_dailyprofit_${profitTimestamp}`]: { type: 'Profit', amount: dailyProfit * daysDiff, note: 'Daily profit (' + dayLabel + ')', date: dateStr(), status: 'completed', timestamp: profitTimestamp }
+    }, loanUpdateFields);
+
+    if (loanRepaidNote) {
+      updates[`transactions/tx_loanrepay_${profitTimestamp}`] = { type: 'Loan', amount: -(dailyProfit * daysDiff - totalProfit), note: loanRepaidNote, date: dateStr(), status: 'completed', timestamp: profitTimestamp + 1 };
+    }
     
     await userRef.update(updates);
     
@@ -1240,7 +1376,7 @@ function closePrivacyModal(event) {
   document.getElementById('privacy-modal-overlay').classList.remove('open');
 }
 
-const tabMap = { home: 'sec-home', 'deposits-log': 'sec-deposits-log', 'withdrawals-log': 'sec-withdrawals-log', 'profits-log': 'sec-profits-log', 'referrals-log': 'sec-referrals-log', team: 'sec-team', plan: 'sec-plan', profile: 'sec-profile', deposit: 'sec-deposit', withdraw: 'sec-withdraw', reinvest: 'sec-reinvest' };
+const tabMap = { home: 'sec-home', 'deposits-log': 'sec-deposits-log', 'withdrawals-log': 'sec-withdrawals-log', 'profits-log': 'sec-profits-log', 'referrals-log': 'sec-referrals-log', team: 'sec-team', plan: 'sec-plan', profile: 'sec-profile', deposit: 'sec-deposit', withdraw: 'sec-withdraw', reinvest: 'sec-reinvest', financing: 'sec-financing' };
 const navOrder = ['home', 'team', 'plan', 'profile'];
 
 function switchTab(tab) {
@@ -1254,6 +1390,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const idx = navOrder.indexOf(tab);
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  if (tab === 'financing') renderFinancing();
   closeMenu();
 }
 
@@ -1386,6 +1523,8 @@ function updateBalanceUI() {
   document.getElementById('reinvest-balance-display').textContent = fmt(balance);
   updateActiveInvestmentDisplay();
   cleanupOldTransactions();
+  const finSection = document.getElementById('sec-financing');
+  if (finSection && finSection.classList.contains('active')) renderFinancing();
 }
 
 // Auto-delete transactions older than 6 hours
@@ -1444,12 +1583,18 @@ function updateReferralLink() {
   document.getElementById('ref-url-new').value = refLink;
 }
 
+function toggleAccordion(headerEl) {
+  const item = headerEl.closest('.acc-item');
+  item.classList.toggle('open');
+}
+
 function updateProfileUI() {
   if (!currentUser) return;
   document.getElementById('dash-username').textContent = currentUser.username;
   document.getElementById('profile-user-simple').textContent = currentUser.username || '—';
-  document.getElementById('profile-phone-simple').textContent = currentUser.phone || '—';
+  document.getElementById('profile-email-simple').textContent = currentUser.email || '—';
   document.getElementById('profile-date-simple').textContent = currentUser.joinedDate || '2025';
+  document.getElementById('profile-referrer-simple').textContent = currentUser.referredBy || 'None';
   document.getElementById('with-phone-note').textContent = currentUser.phone || '—';
 }
 
@@ -1461,7 +1606,7 @@ function renderHistory() {
   const typeGroups = {
     'deposits-log-list': { types: ['Deposit'], emptyTitle: 'No Deposits Yet', emptyText: 'Your deposit history will appear here.' },
     'withdrawals-log-list': { types: ['Withdrawal'], emptyTitle: 'No Withdrawals Yet', emptyText: 'Your withdrawal history will appear here.' },
-    'profits-log-list': { types: ['Profit'], emptyTitle: 'No Profits Yet', emptyText: 'Your daily profits will appear here.' },
+    'profits-log-list': { types: ['Profit', 'Loan'], emptyTitle: 'No Profits Yet', emptyText: 'Your daily profits will appear here.' },
     'referrals-log-list': { types: ['Referral'], emptyTitle: 'No Referral Bonuses Yet', emptyText: 'Your referral bonuses will appear here.' }
   };
 
@@ -1499,6 +1644,89 @@ function renderHistory() {
 function maskPhone(phone) {
   if (!phone || phone.length < 8) return '—';
   return phone.slice(0, 6) + '****' + phone.slice(-3);
+}
+
+const FIN_MIN_CAPITAL = 100000;
+const FIN_MIN_ACTIVE_REFERRALS = 40;
+
+function renderFinancing() {
+  if (!currentUser) return;
+  const activeCapital = currentUser.stake || 0;
+  const refs = currentUser.referrals ? Object.values(currentUser.referrals) : [];
+  const activeReferrals = refs.filter(r => (r.invested || 0) > 0).length;
+  const qualifies = activeCapital >= FIN_MIN_CAPITAL && activeReferrals >= FIN_MIN_ACTIVE_REFERRALS;
+
+  const notQualifiedSec = document.getElementById('financing-not-qualified');
+  const qualifiedSec = document.getElementById('financing-qualified');
+  const pendingSec = document.getElementById('financing-pending');
+  const activeSec = document.getElementById('financing-active');
+  [notQualifiedSec, qualifiedSec, pendingSec, activeSec].forEach(s => { if (s) s.style.display = 'none'; });
+
+  const loan = currentUser.activeLoan || null;
+
+  if (loan && loan.status === 'pending') {
+    if (pendingSec) pendingSec.style.display = 'block';
+    document.getElementById('fin-pending-amount').textContent = fmt(loan.principal || 0);
+    return;
+  }
+
+  if (loan && loan.status === 'active') {
+    if (activeSec) activeSec.style.display = 'block';
+    document.getElementById('fin-loan-principal').textContent = fmt(loan.principal || 0);
+    document.getElementById('fin-loan-total').textContent = fmt(loan.totalOwed || 0);
+    document.getElementById('fin-loan-remaining').textContent = fmt(loan.remaining || 0);
+    return;
+  }
+
+  if (!qualifies) {
+    if (notQualifiedSec) notQualifiedSec.style.display = 'block';
+    document.getElementById('fin-req-capital').textContent = fmt(activeCapital) + ' / ' + fmt(FIN_MIN_CAPITAL);
+    document.getElementById('fin-req-referrals').textContent = activeReferrals + ' / ' + FIN_MIN_ACTIVE_REFERRALS;
+  } else {
+    if (qualifiedSec) qualifiedSec.style.display = 'block';
+  }
+}
+
+async function requestLoan() {
+  setErr('loan-amount-err', false);
+  if (!currentUser) return;
+  const activeCapital = currentUser.stake || 0;
+  const amount = parseInt(document.getElementById('loan-amount-input').value) || 0;
+  if (!amount || amount <= 0 || amount > activeCapital) {
+    setErr('loan-amount-err', true, 'Enter a valid amount within your limit');
+    return;
+  }
+  if (currentUser.activeLoan && (currentUser.activeLoan.status === 'pending' || currentUser.activeLoan.status === 'active')) {
+    return;
+  }
+  const btn = document.getElementById('loan-request-btn');
+  btn.disabled = true; btn.textContent = 'Processing...';
+  try {
+    const totalOwed = Math.ceil(amount * 1.10);
+    const loanData = {
+      principal: amount,
+      totalOwed: totalOwed,
+      remaining: totalOwed,
+      status: 'pending',
+      requestedAt: Date.now()
+    };
+    await db.ref('users/' + safeKey(currentUsername)).update({ activeLoan: loanData });
+    await db.ref('loanRequests/' + safeKey(currentUsername) + '_' + Date.now()).set({
+      username: currentUsername,
+      phone: currentUser.phone || '',
+      amount: amount,
+      totalOwed: totalOwed,
+      activeCapital: activeCapital,
+      status: 'pending',
+      timestamp: Date.now(),
+      date: dateStr()
+    });
+    document.getElementById('loan-amount-input').value = '';
+    renderFinancing();
+  } catch (e) {
+    console.error('Loan request error:', e);
+  }
+  btn.disabled = false; btn.textContent = 'REQUEST LOAN';
 }
 
 function renderTeam() {
