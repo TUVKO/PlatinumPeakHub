@@ -301,9 +301,11 @@ tbody td{padding:13px 16px;font-size:13px;vertical-align:middle;}
       <div class="nav-item" onclick="showPage('pg-tube')"><span class="nav-icon">📈</span><span>Investors</span></div>
       <div class="nav-item" onclick="showPage('pg-transactions')"><span class="nav-icon">💰</span><span>Transactions</span></div>
       <div class="nav-item" onclick="showPage('pg-withdrawals')"><span class="nav-icon">💸</span><span>Withdrawals</span><span class="nav-badge" id="withdrawals-nav-badge">0</span></div>
+      <div class="nav-item" onclick="showPage('pg-loans')"><span class="nav-icon">🏦</span><span>Loans</span><span class="nav-badge" id="loans-nav-badge">0</span></div>
       <div class="nav-item" onclick="showPage('pg-debit')"><span class="nav-icon">💳</span><span>Debit User</span></div>
       <div class="nav-item" onclick="showPage('pg-sog')"><span class="nav-icon">🗑️</span><span>SOG</span></div>
       <div class="nav-item" onclick="showPage('pg-sup')"><span class="nav-icon">📱</span><span>SUP</span></div>
+      <div class="nav-item" onclick="showPage('pg-genusers')"><span class="nav-icon">👥</span><span>Generate Users</span></div>
       <div class="nav-item" onclick="showPage('pg-settings')"><span class="nav-icon">⚙️</span><span>Settings</span></div>
       <div class="nav-item" onclick="showPage('pg-admin-withdraw')"><span class="nav-icon">💵</span><span>Admin Withdraw</span></div>
     </div>
@@ -411,6 +413,29 @@ tbody td{padding:13px 16px;font-size:13px;vertical-align:middle;}
       </div>
     </div>
 
+    <!-- LOANS -->
+    <div class="page" id="pg-loans">
+      <div class="page-title">🏦 Loan Requests</div>
+      <div class="page-sub">Review and approve financing requests</div>
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-card-label">Pending</div><div class="stat-card-val gold" id="loan-stat-pending">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">Active Loans</div><div class="stat-card-val emerald" id="loan-stat-active">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">Total Pending Amount</div><div class="stat-card-val red" id="loan-stat-amount">UGX 0</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Loan Requests</div>
+          <span id="loan-count" style="font-size:12px;color:var(--muted);">0 requests</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Username</th><th>Phone</th><th>Active Capital</th><th>Loan Amount</th><th>Total Owed</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="loan-table-body"><tr class="empty-row"><td colspan="8">No loan requests yet</tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- DEBIT USER -->
     <div class="page" id="pg-debit">
       <div class="page-title">Debit User</div>
@@ -493,6 +518,45 @@ tbody td{padding:13px 16px;font-size:13px;vertical-align:middle;}
             <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;align-items:center;">
               <button class="btn btn-save" onclick="copySUPNumbers()">📋 Copy All Numbers</button>
               <span id="sup-copy-feedback" style="font-size:12px;color:var(--success);display:none;">✅ Copied to clipboard!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE USERS - Invested + 5+ referrals phone numbers -->
+    <div class="page" id="pg-genusers">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div class="page-title">👥 Generate Users</div>
+          <div class="page-sub">Phone numbers of invested users and users with 5+ referrals (all levels)</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">📱 Contact List</div>
+          <button class="btn btn-save" onclick="generateUsersList()">Generate List</button>
+        </div>
+        <div style="padding:24px;">
+          <div id="gu-loading" style="display:none;text-align:center;padding:40px;color:var(--muted);">
+            <div class="loading-spinner" style="width:32px;height:32px;margin:0 auto 12px;"></div>
+            <div>Fetching users...</div>
+          </div>
+          <div id="gu-empty" style="display:none;text-align:center;padding:40px;color:var(--muted);">
+            <div style="font-size:16px;margin-bottom:8px;">📭</div>
+            <div id="gu-empty-text">Click "Generate List" to fetch data.</div>
+          </div>
+          <div id="gu-result" style="display:none;">
+            <div id="gu-count" style="font-size:13px;color:var(--muted);margin-bottom:12px;"></div>
+            <table>
+              <thead>
+                <tr><th>Phone Number</th></tr>
+              </thead>
+              <tbody id="gu-table-body"></tbody>
+            </table>
+            <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-save" onclick="copyGenUsers()">📋 Copy All Numbers</button>
+              <span id="gu-copy-feedback" style="font-size:12px;color:var(--success);display:none;">✅ Copied to clipboard!</span>
             </div>
           </div>
         </div>
@@ -747,12 +811,14 @@ let wdFilter = 'pending';
 let debitTargetUser = null;
 let debitHistory = [];
 let allWithdrawals = {};
+let allLoanRequests = {};
 let awHistory = [];
 let allAdminTransactions = {};
 
 let usersUnsubscribe = null;
 let settingsUnsubscribe = null;
 let withdrawalsUnsubscribe = null;
+let loansUnsubscribe = null;
 let adminTxUnsubscribe = null;
 
 function fmt(n) { return 'UGX ' + Number(n || 0).toLocaleString(); }
@@ -782,23 +848,30 @@ document.addEventListener('visibilitychange', () => {
 
 async function forceRefreshAdminData() {
   try {
-    const [usersSnap, settingsSnap, withdrawalsSnap, adminTxSnap] = await Promise.all([
+    const [usersSnap, settingsSnap, withdrawalsSnap, adminTxSnap, loansSnap] = await Promise.all([
       db.ref('users').get(),
       db.ref('settings').get(),
       db.ref('pendingWithdrawals').get(),
-      db.ref('adminTransactions').get()
+      db.ref('adminTransactions').get(),
+      db.ref('loanRequests').get()
     ]);
     allUsers = usersSnap.val() || {};
     allSettings = settingsSnap.val() || allSettings;
     allWithdrawals = withdrawalsSnap.val() || {};
     allAdminTransactions = adminTxSnap.val() || {};
+    allLoanRequests = loansSnap.val() || {};
     renderDashboard();
     renderUsersTable();
     renderTube();
     renderTransactions();
     loadSettingsUI();
-    renderWithdrawals();
+    renderWithdrawalsStats();
+    renderWithdrawalsTable();
+    updateWithdrawalsBadge();
     renderAdminTransactions();
+    renderLoansStats();
+    renderLoansTable();
+    updateLoansBadge();
   } catch (e) { console.warn('Force refresh error:', e); }
 }
 
@@ -852,6 +925,14 @@ function startRealtimeListeners() {
     renderWithdrawalsStats();
     renderWithdrawalsTable();
     updateWithdrawalsBadge();
+  });
+
+  if (loansUnsubscribe) loansUnsubscribe();
+  loansUnsubscribe = db.ref('loanRequests').on('value', (snap) => {
+    allLoanRequests = snap.val() || {};
+    renderLoansStats();
+    renderLoansTable();
+    updateLoansBadge();
   });
   
   // Real-time admin transactions listener
@@ -1271,6 +1352,94 @@ function updateWithdrawalsBadge() {
   const badge = document.getElementById('withdrawals-nav-badge');
   if (count > 0) { badge.textContent = count; badge.style.display = 'inline-flex'; }
   else { badge.style.display = 'none'; }
+}
+
+function updateLoansBadge() {
+  const count = Object.values(allLoanRequests).filter(v => v.status === 'pending').length;
+  const badge = document.getElementById('loans-nav-badge');
+  if (badge) {
+    if (count > 0) { badge.textContent = count; badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
+  }
+}
+
+function renderLoansStats() {
+  const vals = Object.values(allLoanRequests);
+  const pending = vals.filter(v => v.status === 'pending');
+  const active = vals.filter(v => v.status === 'approved');
+  const pendingAmt = pending.reduce((s, v) => s + (v.amount || 0), 0);
+  const pendingEl = document.getElementById('loan-stat-pending');
+  const activeEl = document.getElementById('loan-stat-active');
+  const amtEl = document.getElementById('loan-stat-amount');
+  if (pendingEl) pendingEl.textContent = pending.length;
+  if (activeEl) activeEl.textContent = active.length;
+  if (amtEl) amtEl.textContent = fmt(pendingAmt);
+}
+
+function renderLoansTable() {
+  const tbody = document.getElementById('loan-table-body');
+  const countEl = document.getElementById('loan-count');
+  if (!tbody) return;
+  let entries = Object.entries(allLoanRequests);
+  entries.sort((a, b) => b[0].localeCompare(a[0]));
+  if (countEl) countEl.textContent = entries.length + ' requests';
+  if (!entries.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No loan requests yet<\/tr>'; return; }
+
+  tbody.innerHTML = entries.map(([k, v]) => {
+    const sc = v.status === 'approved' ? 'var(--success)' : v.status === 'rejected' ? 'var(--warn)' : 'var(--muted)';
+    const si = v.status === 'approved' ? '✅ Approved' : v.status === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+    const actions = v.status === 'pending' ? `
+      <button class="btn btn-approve" onclick="approveLoan('${k}', '${v.username}', ${v.amount}, ${v.totalOwed})">✅ Approve</button>
+      <button class="btn btn-reject" onclick="rejectLoan('${k}', '${v.username}')">❌ Reject</button>
+    ` : '—';
+    return `<tr>
+      <td class="mono" style="font-size:11px;">${v.date || '—'}</td>
+      <td><strong>${v.username || '—'}</strong></td>
+      <td class="mono">${v.phone || '—'}</td>
+      <td class="mono">${fmt(v.activeCapital)}</td>
+      <td class="mono" style="color:var(--gold);font-weight:800;">${fmt(v.amount)}</td>
+      <td class="mono" style="color:var(--warn);font-weight:800;">${fmt(v.totalOwed)}</td>
+      <td><span style="font-size:11px;font-weight:700;color:${sc};">${si}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function approveLoan(reqKey, username, amount, totalOwed) {
+  const confirmed = await confirmAction('Approve Loan?', 'Approve loan of ' + fmt(amount) + ' for ' + username + '? Total repayment: ' + fmt(totalOwed));
+  if (!confirmed) return;
+  try {
+    const sk = safeKey(username);
+    const userSnap = await db.ref('users/' + sk).get();
+    if (!userSnap.exists()) { toast('❌ User not found'); return; }
+    const user = userSnap.val();
+    const newBalance = (user.balance || 0) + amount;
+    const timestamp = Date.now();
+    await db.ref('users/' + sk).update({
+      balance: newBalance,
+      activeLoan: { principal: amount, totalOwed: totalOwed, remaining: totalOwed, status: 'active', approvedAt: timestamp },
+      [`transactions/tx_loan_${timestamp}`]: { type: 'Deposit', amount: amount, note: 'Loan disbursement', date: dateStr(), status: 'completed', timestamp: timestamp }
+    });
+    await db.ref('loanRequests/' + reqKey).update({ status: 'approved' });
+    toast('✅ Loan approved for ' + username);
+  } catch (e) {
+    console.error('Loan approval error:', e);
+    toast('❌ Error approving loan');
+  }
+}
+
+async function rejectLoan(reqKey, username) {
+  const confirmed = await confirmAction('Reject Loan?', 'Reject loan request from ' + username + '?');
+  if (!confirmed) return;
+  try {
+    const sk = safeKey(username);
+    await db.ref('users/' + sk + '/activeLoan').remove();
+    await db.ref('loanRequests/' + reqKey).update({ status: 'rejected' });
+    toast('✅ Loan request rejected');
+  } catch (e) {
+    console.error('Loan rejection error:', e);
+    toast('❌ Error rejecting loan');
+  }
 }
 
 function renderWithdrawalsStats() {
@@ -2406,6 +2575,97 @@ function copySUPNumbers() {
     setTimeout(() => {
       feedback.style.display = 'none';
     }, 3000);
+  }).catch(err => {
+    console.error('Copy failed:', err);
+    Swal.fire({ icon: 'error', title: 'Copy Failed', text: 'Could not copy to clipboard' });
+  });
+}
+
+// ===== GENERATE USERS: invested users + users with 5+ referrals (all levels) =====
+function formatGenPhone(raw) {
+  let p = String(raw || '').replace(/[\s\-()]/g, '');
+  if (!p) return '';
+  if (p.charAt(0) === '+') return p;
+  if (p.indexOf('00') === 0) return '+' + p.slice(2);
+  if (p.charAt(0) === '0') return '+256' + p.slice(1);
+  if (p.length >= 11) return '+' + p;
+  return '+256' + p;
+}
+
+function generateUsersList() {
+  const loading = document.getElementById('gu-loading');
+  const empty = document.getElementById('gu-empty');
+  const emptyText = document.getElementById('gu-empty-text');
+  const result = document.getElementById('gu-result');
+
+  loading.style.display = 'block';
+  empty.style.display = 'none';
+  result.style.display = 'none';
+  window.genUsersList = [];
+
+  db.ref('users').once('value', (snapshot) => {
+    loading.style.display = 'none';
+
+    if (!snapshot.exists()) {
+      emptyText.textContent = 'No users found.';
+      empty.style.display = 'block';
+      return;
+    }
+
+    const users = snapshot.val();
+    const seen = {};
+    const phones = [];
+
+    Object.keys(users).forEach(key => {
+      const user = users[key] || {};
+      const isInvested = (user.stake || 0) > 0;
+      const refCount = user.referrals ? Object.keys(user.referrals).length : 0;
+      if (!isInvested && refCount < 5) return;
+      const phone = formatGenPhone(user.phone);
+      if (!phone || seen[phone]) return;
+      seen[phone] = true;
+      phones.push(phone);
+    });
+
+    if (phones.length === 0) {
+      emptyText.textContent = 'No matching users found.';
+      empty.style.display = 'block';
+      return;
+    }
+
+    phones.sort();
+    window.genUsersList = phones;
+
+    const tbody = document.getElementById('gu-table-body');
+    tbody.innerHTML = '';
+    phones.forEach(phone => {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.className = 'mono';
+      cell.textContent = phone;
+      row.appendChild(cell);
+      tbody.appendChild(row);
+    });
+
+    document.getElementById('gu-count').textContent = phones.length + ' phone number' + (phones.length === 1 ? '' : 's');
+    result.style.display = 'block';
+  }).catch(err => {
+    console.error('Error fetching users:', err);
+    loading.style.display = 'none';
+    emptyText.textContent = 'Could not fetch users. Try again.';
+    empty.style.display = 'block';
+  });
+}
+
+function copyGenUsers() {
+  if (!window.genUsersList || window.genUsersList.length === 0) {
+    Swal.fire({ icon: 'error', title: 'No Data', text: 'Please generate the list first' });
+    return;
+  }
+  navigator.clipboard.writeText(window.genUsersList.join('\n')).then(() => {
+    const feedback = document.getElementById('gu-copy-feedback');
+    feedback.style.display = 'inline';
+    setTimeout(() => { feedback.style.display = 'none'; }, 3000);
   }).catch(err => {
     console.error('Copy failed:', err);
     Swal.fire({ icon: 'error', title: 'Copy Failed', text: 'Could not copy to clipboard' });
